@@ -6,17 +6,23 @@ public class BinarySearchTreeImpl<T extends Comparable> implements BinarySearchT
 
     @Override
     public void insert(T elem) {
-        this.root = insert(this.root, elem);
+        this.root = insert(this.root, new Node(elem));
     }
 
-    private Node insert(Node root, T elem) {
+    private Node insert(Node root, Node node) {
         if (root == null) {
-            root = new Node(elem);
+            root = node;
         } else {
-            if (root.value.compareTo(elem) >= 0) {
-                root.left = insert(root.left, elem);
+            if (node.value.compareTo(root.value) < 0) {
+                if (root.left == null) {
+                    root.left = node;
+                } else root.left = insert(root.left, node);
             } else {
-                root.right = insert(root.right, elem);
+                if (root.right == null) {
+                    root.right = node;
+                } else {
+                    root.right = insert(root.right, node);
+                }
             }
         }
         return root;
@@ -24,56 +30,63 @@ public class BinarySearchTreeImpl<T extends Comparable> implements BinarySearchT
 
     @Override
     public boolean remove(T elem) {
-        return remove(root, null, elem);
+        return remove(root, elem);
 
     }
 
-    private boolean remove(Node current, Node previous, T elem) {
-
-        if (current == null) {
-            return false;
+    private Node findMinForRemove(Node tree) {
+        Node previous = tree;
+        Node current = tree.right;
+        if (current.left == null) {
+            return current;
         } else {
+            while (current.left != null) {
+                previous = current;
+                current = current.left;
+            }
+            previous.left = current.right;
+            current.right = tree.right;
+            current.left = tree.left;
+        }
+        return current;
+    }
+
+    private boolean remove(Node current, T elem) {
+        Node previous = null;
+        while (!current.value.equals(elem)) {
+            previous = current;
             if (elem.compareTo(current.value) < 0) {
-
-                return remove(current.left, current, elem);
-            } else if (elem.compareTo(current.value) > 0) {
-                return remove(current.right, current, elem);
+                current = current.left;
             } else {
-                if (current.left == null && current.right == null) {
-                    if (previous.left == current) {
-                        previous.left = null;
-                    } else {
-                        previous.right = null;
-                    }
-
-                } else {
-                    Node node;
-                    node = current.right;
-                    if (previous == null) {
-                        root = current.left;
-                        current = root;
-                    } else
-                    if (previous.left == current) {
-
-                        previous.left = previous.left.left;
-                        current = previous.left;
-                    } else {
-                        previous.right = previous.right.left;
-                        current = previous.right;
-                    }
-                    while (current.right != null) {
-                        current = current.right;
-                    }
-                    current.right = node;
-
-                }
-                return true;
-
-
+                current = current.right;
+            }
+            if (current == null) {
+                return false;
             }
         }
+        if (current.left != null && current.right != null) {
+            if (previous.left.value == elem) {
+                previous.left = findMinForRemove(current);
+                previous.left.left = current.left;
+            } else {
+                previous.right = findMinForRemove(current);
+                previous.right.left = current.left;
+            }
+        } else if (current.left != null) {
+            if (previous.left.value == elem) {
+                previous.left = current.left;
+            } else previous.right = current.left;
+        } else if (current.right != null) {
+            if (previous.left.value == elem) {
+                previous.left = current.right;
+            } else previous.right = current.right;
+        } else {
+            if (previous.left.value == elem) {
+                previous.left = null;
+            } else previous.right = null;
+        }
+        return true;
     }
-
 
 
     @Override
@@ -115,12 +128,8 @@ public class BinarySearchTreeImpl<T extends Comparable> implements BinarySearchT
         printAllByLevels(root);
     }
 
+
     private void printAllByLevels(Node root) {
-        if (root != null) {
-            printAllByLevels(root.left);
-            printAllByLevels(root.right);
-            System.out.println(root.value);
-        }
     }
 
     private class Node {

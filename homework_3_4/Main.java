@@ -14,11 +14,11 @@ public class Main {
         bst.insert(34);
         bst.remove(124);
         bst.remove(10);
-        bst.printAllByLevels();
+        bst.remove(192);
+        bst.printAll();
 
 
 
 
     }
 }
-
